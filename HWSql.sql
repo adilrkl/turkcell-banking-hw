@@ -24,7 +24,7 @@ CREATE TABLE books(
 CREATE TABLE book_copies(
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL,
-    status VARCHAR(50) DEFAULT 'available',
+    status VARCHAR(50) DEFAULT 'available', -- available, borrowed
     FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
-    user_type VARCHAR(50) NOT NULL,
+    user_type VARCHAR(50) NOT NULL, -- student, staff
     address TEXT,
     gsm VARCHAR(20),
     school_number VARCHAR(50)
@@ -45,7 +45,7 @@ CREATE TABLE transaction(
     processed_by_id INTEGER NOT NULL,
     start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     end_date DATE NOT NULL,
-    status INTEGER DEFAULT 0,
+    status INTEGER DEFAULT 0, -- 0 = Good (İyi durumda), 1 = Worn (Yıpranmış)
     return_date DATE,
     FOREIGN KEY (borrower_id) REFERENCES users(id),
     FOREIGN KEY (book_copies_id) REFERENCES book_copies(id),
@@ -94,15 +94,16 @@ INSERT INTO users (name, surname, user_type, address, gsm, school_number) VALUES
 ('Hilal', 'Yıldız', 'student', 'Öğrenci Yurdu 2', '+905329998877', '1004');
 
 INSERT INTO transaction (borrower_id, book_copies_id, processed_by_id, start_date, end_date, status, return_date, penalty_amount) VALUES 
-(3, 2, 1, '2026-04-01', '2026-04-15', 0, '2026-04-14', 0),
-(4, 3, 2, '2026-04-05', '2026-04-20', 1, '2026-04-25', 10.50),
-(5, 6, 1, '2026-04-10', '2026-04-25', 0, NULL, 0),
+(3, 2, 1, '2026-04-01', '2026-04-15', 0, '2026-04-14', 0),    -- Zamanında teslim
+(4, 3, 2, '2026-04-05', '2026-04-20', 1, '2026-04-25', 10.50), -- Geç teslim ve yıpranmış kitap (status 1)
+(5, 6, 1, '2026-04-10', '2026-04-25', 0, NULL, 0),             -- Henüz teslim edilmedi
 (6, 1, 2, '2026-04-12', '2026-04-26', 0, '2026-04-20', 0),
 (3, 4, 1, '2026-04-15', '2026-04-30', 0, NULL, 0);
 
 UPDATE users SET gsm = '+905000000000' WHERE id = 6;
 UPDATE transaction SET penalty_amount = 5.00 WHERE return_date IS NULL AND end_date < CURRENT_DATE;
 
+-- Yanlış kategori ekleme ve silme işlemi
 INSERT INTO categories (name) VALUES ('Turkcell');
 DELETE FROM categories WHERE name = 'Turkcell';
 
